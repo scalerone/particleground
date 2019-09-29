@@ -1,0 +1,160 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>资产管理后台登录</title>
+    <meta name="author" content="" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" media="screen" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" media="screen" />
+    <link rel="stylesheet" type="text/css" href="css/style.css" tppabs="css/style.css" />
+    <style>
+        body {
+            height: 100%;
+            background: #16a085;
+            overflow: hidden;
+        }
+
+        canvas {
+            z-index: -1;
+            position: absolute;
+        }
+
+        a:hover {
+            color: white;
+        }
+    </style>
+    <script src="js/jquery.js"></script>
+     <script src="js/verificationNumbers.js" tppabs="js/verificationNumbers.js"></script>
+    <script src="js/Particleground.js" tppabs="js/Particleground.js"></script>
+    <script>
+        $(document).ready(function () {
+            //粒子背景特效
+            $('body').particleground({
+                dotColor: '#105649',
+                lineColor: '#5cbdaa'
+            });
+            //验证码
+            createCode();
+        });
+    </script>
+</head>
+<body>
+    <dl class="admin_login">
+        <dt>
+            <strong>资产管理系统</strong>
+            <em>Asset Management System</em>
+        </dt>
+        <dd class="user_icon">
+            <input type="text" id="user_name" placeholder="账号" class="login_txtbx" />
+        </dd>
+        <dd class="pwd_icon">
+            <input type="password" id="password" placeholder="密码" class="login_txtbx" />
+        </dd>
+        <dd class="val_icon" style="display: none;">
+            <div class="checkcode">
+                <input type="text" id="J_codetext" placeholder="验证码" maxlength="4" class="login_txtbx">
+                <canvas class="J_codeimg" width="100" height="40" id="myCanvas" onclick="createCode()">对不起，您的浏览器不支持canvas，请下载最新版浏览器!</canvas>
+            </div>
+            <!--<input type="button" value="验证码核验" class="ver_btn" onclick="validate();">-->
+        </dd>
+        <dd>
+            <input type="button" value="立即登陆" class="submit_btn login" />
+        </dd>
+        <dd>
+         
+        </dd>
+    </dl>
+   
+    <script>
+        $(function () {
+            var uName = getQueryString("u"), pwd = getQueryString("p");
+            if (uName != null && pwd != null) {
+                var msgLayer = layer.msg("验证中...", { icon: 16, shade: 0.3, time: 9999999999 });
+                $.post("ajax/login", {
+                    act: "SingleLogin",
+                    u: uName,
+                    p: pwd
+                }, function (result) {
+                    layer.close(msgLayer);
+                    if (result.status == 1) {
+                        layer.msg('登陆成功,跳转中。。。', {
+                            icon: 16,
+                            shade: 0.3,
+                            time: 10000
+                        });
+                        location.href = "main.aspx";
+                    } else {
+                        showMsg(result.message, "#user_name");
+                    }
+                }, "json");
+            }
+            
+            $("#user_name").focus();
+
+            $(document).keypress(function (e) {
+                if (e.keyCode == 13) submit();
+            });
+
+            $(".login").click(function () {
+                submit();
+            });
+
+            function submit() {
+                if (check_input()) {
+                    var msgLayer = layer.msg("正在验证登陆...", { icon: 16, shade: 0.3, time: 9999999999 });
+                    $.post("ajax/ajax_login.ashx", {
+                        act: "Login",
+                        user_name: $("#user_name").val(),
+                        password: $("#password").val()
+                    }, function (result) {
+                        layer.close(msgLayer);
+                        if (result.status == 1) {
+                            layer.msg('登陆成功,跳转中。。。', {
+                                icon: 16,
+                                shade: 0.3,
+                                time: 10000
+                            });
+                            location.href = "main.aspx";
+                        } else {
+                            showMsg(result.message, "#user_name");
+                        }
+                    }, "json");
+                }
+            }
+
+            function check_input() {
+                if ($("#user_name").val().trim() == "") {
+                    showMsg("用户名不能为空", "#user_name");
+                    return false;
+                }
+                if ($("#password").val().trim() == "") {
+                    showMsg("密码不能为空", "#password");
+                    return false;
+                }
+                //if ($("#J_codetext").val().trim() == "") {
+                //    showMsg("请输入验证码", "#J_codetext");
+                //    return false;
+                //}
+                //if (!validate()) {
+                //    showMsg("验证码错误", "#J_codetext");
+                //    return false;
+                //}
+                return true;
+            }
+
+            function showMsg(msg, elementId) {
+                layer.msg(msg, { icon: 2 });
+                $(elementId).focus();
+            }
+
+            function getQueryString(pName) {
+                var reg = new RegExp("(^|&)" + pName + "=([^&]*)(&|$)", "i");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) return unescape(r[2]); return null;
+            }
+        });
+    </script>
+</body>
+</html>
+
